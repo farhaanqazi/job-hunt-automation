@@ -1,0 +1,16 @@
+{
+  "data": [
+    {
+      "slug": "senior-python-developer-example",
+      "company_name": "Berlin Example",
+      "title": "Senior Python Developer",
+      "description": "Remote possible. Python APIs.",
+      "remote": true,
+      "url": "https://www.arbeitnow.com/jobs/companies/berlin-example/senior-python-developer-example",
+      "tags": ["Python", "Backend"],
+      "job_types": ["full-time"],
+      "location": "Berlin",
+      "created_at": 1781604000
+    }
+  ]
+}

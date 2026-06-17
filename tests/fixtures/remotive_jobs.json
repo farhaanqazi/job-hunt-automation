@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {
+      "id": 101,
+      "url": "https://remotive.com/remote-jobs/software-dev/python-backend-engineer-101",
+      "title": "Python Backend Engineer",
+      "company_name": "Example Remote Co",
+      "category": "Software Development",
+      "job_type": "full_time",
+      "candidate_required_location": "Worldwide",
+      "publication_date": "2026-06-16T12:00:00",
+      "description": "Work from anywhere. Python, APIs, automation.",
+      "salary": "$80000 - $120000"
+    }
+  ]
+}

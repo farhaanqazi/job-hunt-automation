@@ -1,0 +1,14 @@
+[
+  {
+    "id": "lev-1",
+    "text": "Remote Platform Engineer",
+    "hostedUrl": "https://jobs.lever.co/example/lev-1",
+    "categories": {
+      "team": "Engineering",
+      "location": "Remote",
+      "commitment": "Full-time"
+    },
+    "descriptionPlain": "Work from anywhere on platform automation.",
+    "createdAt": 1781604000000
+  }
+]

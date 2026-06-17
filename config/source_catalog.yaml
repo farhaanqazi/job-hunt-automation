@@ -1,0 +1,65 @@
+sources:
+  remotive:
+    display_name: Remotive
+    enabled: true
+    source_type: open_remote_feed
+    data_access: public_api
+    source_code_license: closed
+    data_rights: proprietary
+    redistribution_allowed: false
+    requires_attribution: true
+    canonical_url_required: true
+    rate_limit_per_minute: 20
+    usage_notes: "Private personal use only. Preserve Remotive links and attribution."
+
+  adzuna:
+    display_name: Adzuna
+    enabled: true
+    source_type: broad_search
+    data_access: keyed_public_api
+    source_code_license: closed
+    data_rights: proprietary
+    redistribution_allowed: false
+    requires_attribution: true
+    canonical_url_required: true
+    rate_limit_per_minute: 20
+    usage_notes: "Use API credentials. Store canonical redirect URL."
+
+  greenhouse:
+    display_name: Greenhouse
+    enabled: true
+    source_type: target_company_ats
+    data_access: public_ats_feed
+    source_code_license: closed
+    data_rights: proprietary
+    redistribution_allowed: false
+    requires_attribution: false
+    canonical_url_required: true
+    rate_limit_per_minute: 30
+    usage_notes: "Per-company board token feed, not broad search."
+
+  lever:
+    display_name: Lever
+    enabled: true
+    source_type: target_company_ats
+    data_access: public_ats_feed
+    source_code_license: closed
+    data_rights: proprietary
+    redistribution_allowed: false
+    requires_attribution: false
+    canonical_url_required: true
+    rate_limit_per_minute: 30
+    usage_notes: "Per-company handle feed, not broad search."
+
+  arbeitnow:
+    display_name: Arbeitnow
+    enabled: true
+    source_type: regional_open_feed
+    data_access: public_api
+    source_code_license: closed
+    data_rights: proprietary
+    redistribution_allowed: false
+    requires_attribution: true
+    canonical_url_required: true
+    rate_limit_per_minute: 20
+    usage_notes: "Supplemental EU/Germany-skewed source."

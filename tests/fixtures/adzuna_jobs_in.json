@@ -1,0 +1,16 @@
+{
+  "results": [
+    {
+      "id": "adz-1",
+      "title": "Remote Python Developer",
+      "company": {"display_name": "Adzuna Example"},
+      "location": {"display_name": "India"},
+      "redirect_url": "https://www.adzuna.in/details/adz-1",
+      "description": "Remote India role for Python API development.",
+      "created": "2026-06-16T10:00:00Z",
+      "category": {"label": "IT Jobs"},
+      "salary_min": 1200000,
+      "salary_max": 2200000
+    }
+  ]
+}

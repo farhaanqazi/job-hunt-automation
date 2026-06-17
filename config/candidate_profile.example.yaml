@@ -1,0 +1,30 @@
+target_titles:
+  - python developer
+  - backend engineer
+  - automation engineer
+preferred_skills:
+  - python
+  - fastapi
+  - api
+  - automation
+  - sql
+strong_skills:
+  - python
+  - backend
+  - scripting
+learning_skills:
+  - aws
+  - docker
+excluded_keywords:
+  - onsite
+  - sales
+  - unpaid
+preferred_locations:
+  - remote
+  - india
+timezone: Asia/Calcutta
+remote_only: true
+allow_contract: true
+allow_internship: false
+min_salary: null
+salary_currency: null
