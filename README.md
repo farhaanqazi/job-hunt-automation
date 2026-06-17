@@ -73,7 +73,13 @@ The catalog of allowed sources and their compliance metadata lives in [`config/s
 
 ## Quick start
 
-> Windows / PowerShell shown below. For tiny, copy-paste, one-line-at-a-time instructions, see **[run.md](run.md)**.
+> **One command does everything:** `.\run.ps1` creates the virtual environment, installs dependencies on first run, works around a known machine-level SSL config bug, and launches the CLI. Pass any CLI args straight through:
+> ```powershell
+> .\run.ps1                          # smoke test: list sources
+> .\run.ps1 scan --source remotive   # fetch + score + store jobs
+> .\run.ps1 jobs list --min-score 70
+> ```
+> The manual steps below are equivalent, for when you want to run pieces yourself. For tiny, one-line-at-a-time instructions, see **[run.md](run.md)**.
 
 ```powershell
 # 1. Clone and enter the project
