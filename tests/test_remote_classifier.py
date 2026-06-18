@@ -25,3 +25,16 @@ def test_classifies_hybrid_as_not_remote_first():
 def test_classifies_unknown_when_text_is_ambiguous():
     result = classify_remote("", "Flexible working policy available.")
     assert result == RemoteCategory.UNKNOWN
+
+
+def test_bare_worldwide_location_is_global_remote():
+    # Remotive uses a bare "Worldwide" location string.
+    assert classify_remote("Worldwide", "Remote role.") == RemoteCategory.GLOBAL_REMOTE
+
+
+def test_country_restriction_beats_global_signal():
+    result = classify_remote(
+        "Worldwide",
+        "Remote role, but candidates must be located in Brazil. Work from anywhere in Brazil.",
+    )
+    assert result == RemoteCategory.COUNTRY_RESTRICTED_REMOTE

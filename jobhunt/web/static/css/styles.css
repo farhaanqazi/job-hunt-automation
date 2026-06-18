@@ -208,7 +208,7 @@ code { font-family: var(--mono); font-size: 0.85em; background: var(--paper-sink
 .description {
   background: var(--paper); border: 1px solid var(--rule); padding: 1rem 1.1rem;
   max-height: 360px; overflow: auto; font-size: 0.95rem; line-height: 1.6;
-  column-count: 1;
+  white-space: pre-line;
 }
 
 /* ---------- Forms ---------- */

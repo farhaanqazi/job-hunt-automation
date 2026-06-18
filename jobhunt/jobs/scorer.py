@@ -1,6 +1,18 @@
+import re
+
 from pydantic import BaseModel
 
 from jobhunt.jobs.models import CanonicalJob, RemoteCategory
+
+
+def _mentions(text: str, term: str) -> bool:
+    """Whole-word match for alphanumeric terms; substring for symbol-bearing ones (c++, .net)."""
+    term = term.lower().strip()
+    if not term:
+        return False
+    if re.fullmatch(r"[a-z0-9 ]+", term):
+        return re.search(rf"(?<![a-z0-9]){re.escape(term)}(?![a-z0-9])", text) is not None
+    return term in text
 
 
 class CandidateProfile(BaseModel):
@@ -29,17 +41,17 @@ def score_job(job: CanonicalJob, profile: CandidateProfile) -> CanonicalJob:
         reasons.append("title match")
 
     for skill in profile.preferred_skills:
-        if skill.lower() in text:
+        if _mentions(text, skill):
             score += 8
             reasons.append(skill.lower())
 
     for skill in profile.strong_skills:
-        if skill.lower() in text:
+        if _mentions(text, skill):
             score += 6
             reasons.append(f"strong: {skill.lower()}")
 
     for skill in profile.learning_skills:
-        if skill.lower() in text:
+        if _mentions(text, skill):
             score += 3
             reasons.append(f"learning: {skill.lower()}")
 
@@ -55,7 +67,7 @@ def score_job(job: CanonicalJob, profile: CandidateProfile) -> CanonicalJob:
         concerns.append("not remote-first")
 
     for keyword in profile.excluded_keywords:
-        if keyword.lower() in text:
+        if _mentions(text, keyword):
             score -= 20
             concerns.append(f"excluded keyword: {keyword.lower()}")
 

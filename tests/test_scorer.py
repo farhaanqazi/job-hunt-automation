@@ -71,3 +71,37 @@ def test_onsite_job_scores_low_for_remote_only_profile():
 
     assert scored.fit_score < 50
     assert "not remote-first" in scored.concerns
+
+
+def test_skill_match_is_whole_word_not_substring():
+    profile = CandidateProfile(
+        target_titles=["writer"],
+        preferred_skills=["api"],
+        strong_skills=[],
+        learning_skills=[],
+        excluded_keywords=[],
+        preferred_locations=["remote"],
+        timezone="Asia/Calcutta",
+        remote_only=False,
+        allow_contract=True,
+        allow_internship=False,
+        min_salary=None,
+        salary_currency=None,
+    )
+    job = CanonicalJob(
+        source_id="test",
+        source_job_id="3",
+        source_url="https://example.com/3",
+        title="Writer",
+        company="Example",
+        location_text="Worldwide",
+        remote_category=RemoteCategory.GLOBAL_REMOTE,
+        description_text="A capital role for a therapist-adjacent communicator.",
+        fetched_at=datetime(2026, 6, 17, tzinfo=UTC),
+        raw_payload_hash="hash",
+    )
+
+    scored = score_job(job, profile)
+
+    # "api" must not match inside "capital" or "therapist".
+    assert "api" not in scored.fit_reasons

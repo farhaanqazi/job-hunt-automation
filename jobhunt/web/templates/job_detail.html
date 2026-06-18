@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="page-head">
-  <a class="link" href="{{ url_for('jobs_page') }}">← Back to jobs</a>
+  <a class="link" href="{{ url_for('jobs_page') }}">← Back to listings</a>
   <h1>{{ job.title }}</h1>
   <p class="muted">{{ job.company }}</p>
 </div>
@@ -18,7 +18,7 @@
 
     <dl class="detail-list">
       <dt>Location</dt><dd>{{ job.location_text or '—' }}</dd>
-      <dt>Employment</dt><dd>{{ job.employment_type or '—' }}</dd>
+      <dt>Employment</dt><dd>{{ humanize(job.employment_type) or '—' }}</dd>
       <dt>Salary</dt>
       <dd>
         {% if job.salary_min or job.salary_max %}
@@ -31,16 +31,16 @@
 
     {% if job.fit_reasons %}
     <h3>Strong matches</h3>
-    <ul class="chips">{% for r in job.fit_reasons %}<li class="chip chip-good">{{ r }}</li>{% endfor %}</ul>
+    <ul class="chips">{% for r in job.fit_reasons %}<li class="chip chip-good">{{ reason_label(r) }}</li>{% endfor %}</ul>
     {% endif %}
     {% if job.concerns %}
     <h3>Concerns</h3>
-    <ul class="chips">{% for c in job.concerns %}<li class="chip chip-warn">{{ c }}</li>{% endfor %}</ul>
+    <ul class="chips">{% for c in job.concerns %}<li class="chip chip-warn">{{ reason_label(c) }}</li>{% endfor %}</ul>
     {% endif %}
 
     {% if job.description_text %}
     <h3>Description</h3>
-    <div class="description">{{ job.description_text }}</div>
+    <div class="description">{{ strip_html(job.description_text) }}</div>
     {% endif %}
   </section>
 

@@ -1,9 +1,25 @@
 from pathlib import Path
 
 import httpx
+import pytest
 
 from jobhunt.jobs.models import RemoteCategory
-from jobhunt.sources.remotive import RemotiveSource
+from jobhunt.sources.remotive import RemotiveSource, _parse_salary
+
+
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        ("$80000 - $120000", (80000, 120000, "USD")),
+        ("$12K", (12000, 12000, "USD")),
+        ("€90k - €110k", (90000, 110000, "EUR")),
+        ("", (None, None, None)),
+        (None, (None, None, None)),
+        ("Competitive", (None, None, None)),
+    ],
+)
+def test_parse_salary(raw, expected):
+    assert _parse_salary(raw) == expected
 
 
 def test_remotive_source_normalizes_jobs(httpx_mock):
@@ -26,3 +42,7 @@ def test_remotive_source_normalizes_jobs(httpx_mock):
     assert job.remote_category == RemoteCategory.GLOBAL_REMOTE
     assert job.attribution == "Remotive"
     assert job.source_url.startswith("https://remotive.com/")
+    # Salary "$80000 - $120000" is parsed into numbers.
+    assert job.salary_min == 80000
+    assert job.salary_max == 120000
+    assert job.salary_currency == "USD"
