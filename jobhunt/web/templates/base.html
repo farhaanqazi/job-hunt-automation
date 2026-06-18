@@ -3,18 +3,26 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{% block title %}Job Hunt{% endblock %} · Job Hunt Automation</title>
+  <title>{% block title %}Dashboard{% endblock %} · The Remote Ledger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,900&family=Newsreader:opsz,ital,wght@6..72,0,400;6..72,0,500;6..72,1,400&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}" />
   <script src="{{ url_for('static', path='/js/htmx.min.js') }}" defer></script>
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="{{ url_for('dashboard') }}">
-      <span class="brand-mark">◆</span> Job Hunt
-    </a>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="masthead">
+    <div class="masthead-meta">
+      <span>Remote Edition</span>
+      <span>Private · Personal Use</span>
+    </div>
+    <a class="masthead-title" href="{{ url_for('dashboard') }}">The Remote Ledger</a>
+    <div class="masthead-sub">A curated dossier of remote-first openings — scored, sourced, and tracked</div>
     <nav class="nav">
       <a href="{{ url_for('dashboard') }}" class="{{ 'is-active' if active == 'dashboard' }}">Dashboard</a>
-      <a href="{{ url_for('jobs_page') }}" class="{{ 'is-active' if active == 'jobs' }}">Jobs</a>
+      <a href="{{ url_for('jobs_page') }}" class="{{ 'is-active' if active == 'jobs' }}">Listings</a>
       <a href="{{ url_for('scan_page') }}" class="{{ 'is-active' if active == 'scan' }}">Scan</a>
       <a href="{{ url_for('sources_page') }}" class="{{ 'is-active' if active == 'sources' }}">Sources</a>
       <a href="{{ url_for('export_page') }}" class="{{ 'is-active' if active == 'export' }}">Export</a>
@@ -26,7 +34,8 @@
   </main>
 
   <footer class="footer">
-    Private personal use only · Preserve source URLs &amp; attribution · No redistribution
+    <span class="footer-rule"></span>
+    Public/free-access APIs &amp; ATS feeds — proprietary, no redistribution. Preserve source URLs &amp; attribution.
   </footer>
 </body>
 </html>
