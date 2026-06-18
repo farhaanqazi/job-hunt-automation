@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Sources{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Sources</h1>
+  <p class="muted">Public / free-access APIs and ATS feeds — not open-source data. All proprietary, no redistribution.</p>
+</div>
+
+<section class="panel">
+  <table class="table">
+    <thead>
+      <tr><th>Source</th><th>Type</th><th>Auth</th><th>Status</th><th>Stored</th><th>Redistribution</th></tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td><strong>{{ row.meta.display_name }}</strong><div class="muted small">{{ row.meta.source_id }}</div></td>
+        <td>{{ humanize(row.meta.source_type) }}</td>
+        <td>{{ humanize(row.meta.data_access) }}</td>
+        <td>
+          {% if row.ready %}<span class="pill status-offer">ready</span>
+          {% else %}<span class="pill status-archived">disabled</span>{% endif %}
+        </td>
+        <td>{{ row.count }}</td>
+        <td><span class="pill {{ 'status-rejected' if not row.meta.redistribution_allowed }}">{{ 'no' if not row.meta.redistribution_allowed else 'yes' }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

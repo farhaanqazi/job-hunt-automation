@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Scan{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Scan for jobs</h1>
+  <p class="muted">Fetches live from public/free job APIs, scores against your profile, and stores results.</p>
+</div>
+
+<div class="two-col">
+  <section class="panel">
+    <h2>Single source</h2>
+    <form hx-post="{{ url_for('run_scan') }}" hx-target="#scan-result" hx-indicator="#scan-spin">
+      <div class="field">
+        <label>Source</label>
+        <select name="source">
+          {% for s in scannable %}
+          <option value="{{ s }}" {{ 'disabled' if s == 'adzuna' and not has_adzuna }}>
+            {{ s }}{{ ' (needs API key)' if s == 'adzuna' and not has_adzuna }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Query <span class="muted small">(Adzuna only)</span></label>
+        <input type="text" name="query" value="python remote" />
+      </div>
+      <div class="field">
+        <label>Country <span class="muted small">(Adzuna only)</span></label>
+        <input type="text" name="country" value="in" maxlength="2" />
+      </div>
+      <button type="submit" class="btn btn-primary">Run scan</button>
+      <span id="scan-spin" class="htmx-indicator spinner">Scanning…</span>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Target companies</h2>
+    <p class="muted">Scan the enabled Greenhouse / Lever boards from <code>config/target_companies.yaml</code>.</p>
+    <form hx-post="{{ url_for('run_target_scan') }}" hx-target="#scan-result" hx-indicator="#scan-spin">
+      <button type="submit" class="btn btn-ghost">Scan target companies</button>
+    </form>
+  </section>
+</div>
+
+<div id="scan-result" class="scan-result"></div>
+{% endblock %}

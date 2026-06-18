@@ -14,3 +14,7 @@ dist/
 
 # Vendored third-party reference material (not part of the app)
 research/
+skills/
+
+# Local editor / assistant config
+.claude/

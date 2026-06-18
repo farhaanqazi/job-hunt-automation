@@ -4,13 +4,13 @@
 
 [![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-31%20passing-brightgreen.svg)](#testing)
+[![Tests](https://img.shields.io/badge/tests-40%20passing-brightgreen.svg)](#testing)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-261230.svg)](https://github.com/astral-sh/ruff)
 [![Built with Typer](https://img.shields.io/badge/CLI-Typer-009688.svg)](https://typer.tiangolo.com/)
 [![Pydantic v2](https://img.shields.io/badge/pydantic-v2-E92063?logo=pydantic&logoColor=white)](https://docs.pydantic.dev/)
 [![SQLite](https://img.shields.io/badge/storage-SQLite-003B57?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 
-Job Hunt Automation gathers active job openings from **public / free-access APIs and company ATS feeds**, normalizes them into one canonical model, classifies how remote-friendly each role is, scores it against your candidate profile, and tracks it through your application pipeline — all stored locally in SQLite. It does **not** scrape hostile job portals, does **not** auto-apply, and does **not** republish listings.
+Job Hunt Automation gathers active job openings from **public / free-access APIs and company ATS feeds**, normalizes them into one canonical model, classifies how remote-friendly each role is, scores it against your candidate profile, and tracks it through your application pipeline — all stored locally in SQLite. Drive it from a **CLI** or a local **web UI** (FastAPI + HTMX). It does **not** scrape hostile job portals, does **not** auto-apply, and does **not** republish listings.
 
 > [!IMPORTANT]
 > The sources used here expose **public/free-access APIs** — they are *not* open-source data. Most listing data stays proprietary third-party content. Use this tool for **private, personal job search only**: preserve source URLs and attribution, respect rate limits, and never redistribute listings. See [Compliance model](#compliance-model).
@@ -24,6 +24,7 @@ Job Hunt Automation gathers active job openings from **public / free-access APIs
 - [Sources](#sources)
 - [Quick start](#quick-start)
 - [Usage](#usage)
+- [Web UI](#web-ui)
 - [Configuration](#configuration)
 - [Remote classification & scoring](#remote-classification--scoring)
 - [Compliance model](#compliance-model)
@@ -139,6 +140,26 @@ Add `--help` to any command (e.g. `python main.py jobs --help`) for its full opt
 +-----------------------------------------------------------------------------+
 ```
 
+## Web UI
+
+A local server-rendered web app (FastAPI + HTMX, no Node/build step) covers the full workflow visually:
+
+```powershell
+.\run.ps1 serve              # or:  python main.py serve
+# then open http://127.0.0.1:8000
+```
+
+Options: `--host`, `--port`, `--reload` (dev auto-reload). Pages:
+
+- **Dashboard** — pipeline totals, top matches, breakdowns by remote category and source.
+- **Jobs** — live filtering (search, min score, remote category, status, source); inline shortlist / applied / archive actions via HTMX.
+- **Job detail** — full info, fit reasons, concerns, source link, compliance posture, and one-click status changes.
+- **Scan** — run live scans against the no-key sources (Remotive, Arbeitnow) or Adzuna (with credentials), plus a "scan target companies" action for configured Greenhouse/Lever boards.
+- **Sources** — readiness and compliance posture per source.
+- **Export** — download a private CSV (optionally filtered by min score).
+
+The UI is for local, single-user use — it binds to `127.0.0.1` and reuses the same SQLite database and scan/scoring logic as the CLI.
+
 ## Configuration
 
 | File | Purpose |
@@ -193,8 +214,9 @@ Every stored job preserves: `source_id`, `source_job_id`, `source_url`, `attribu
 
 ```text
 jobhunt/
-  cli.py                 # Typer CLI: sources / scan / jobs / tracker / export
+  cli.py                 # Typer CLI: sources / scan / jobs / tracker / export / serve
   settings.py            # pydantic-settings; credential gating
+  scanning.py            # shared fetch->score->store workflow (CLI + web)
   http_client.py         # shared httpx client
   logging_config.py      # Rich logging setup
   sources/               # one adapter per source + base + registry
@@ -202,7 +224,8 @@ jobhunt/
   storage/               # SQLAlchemy engine, schema, repositories
   applications/          # status tracker
   reports/               # console formatting + CSV export
-tests/                   # 31 tests (offline; HTTP mocked via pytest-httpx)
+  web/                   # FastAPI app, routes, deps, Jinja templates + static (HTMX/CSS)
+tests/                   # 40 tests (offline; HTTP mocked via pytest-httpx)
 config/                  # source catalog, candidate profile, target companies
 main.py                  # entry point -> jobhunt.cli:app
 ```
@@ -212,11 +235,11 @@ main.py                  # entry point -> jobhunt.cli:app
 The suite is fully offline — all HTTP is mocked with `pytest-httpx`, so no network or credentials are needed.
 
 ```powershell
-pytest -q          # 31 tests
+pytest -q          # 40 tests
 ruff check .       # lint (vendored research/ is excluded)
 ```
 
-**Tech stack:** Python 3.11+ · [Typer](https://typer.tiangolo.com/) · [httpx](https://www.python-httpx.org/) · [Pydantic v2](https://docs.pydantic.dev/) + pydantic-settings · [SQLAlchemy 2](https://www.sqlalchemy.org/) / SQLite · [Rich](https://rich.readthedocs.io/) · PyYAML · pytest / pytest-httpx / freezegun · [ruff](https://github.com/astral-sh/ruff).
+**Tech stack:** Python 3.11+ · [Typer](https://typer.tiangolo.com/) · [FastAPI](https://fastapi.tiangolo.com/) + [HTMX](https://htmx.org/) + [Jinja2](https://jinja.palletsprojects.com/) · [Uvicorn](https://www.uvicorn.org/) · [httpx](https://www.python-httpx.org/) · [Pydantic v2](https://docs.pydantic.dev/) + pydantic-settings · [SQLAlchemy 2](https://www.sqlalchemy.org/) / SQLite · [Rich](https://rich.readthedocs.io/) · PyYAML · pytest / pytest-httpx / freezegun · [ruff](https://github.com/astral-sh/ruff).
 
 ## Roadmap
 
@@ -225,7 +248,6 @@ ruff check .       # lint (vendored research/ is excluded)
 - Extended tracker workflow (applied / follow-up scheduling).
 - HTML stripping & text cleanup for descriptions.
 - Cross-source duplicate detection via title/company/URL similarity.
-- Optional local dashboard (FastAPI/Streamlit) for review.
 
 ## License
 

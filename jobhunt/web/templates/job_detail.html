@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ job.title }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <a class="link" href="{{ url_for('jobs_page') }}">← Back to jobs</a>
+  <h1>{{ job.title }}</h1>
+  <p class="muted">{{ job.company }}</p>
+</div>
+
+<div class="two-col">
+  <section class="panel">
+    <div class="detail-badges">
+      <span class="badge {{ score_class(job.fit_score) }}">Score {{ job.fit_score if job.fit_score is not none else '—' }}</span>
+      <span class="pill {{ remote_class(job.remote_category) }}">{{ remote_label(job.remote_category) }}</span>
+      <span class="pill">{{ job.source_id }}</span>
+    </div>
+
+    <dl class="detail-list">
+      <dt>Location</dt><dd>{{ job.location_text or '—' }}</dd>
+      <dt>Employment</dt><dd>{{ job.employment_type or '—' }}</dd>
+      <dt>Salary</dt>
+      <dd>
+        {% if job.salary_min or job.salary_max %}
+          {{ job.salary_min or '?' }}–{{ job.salary_max or '?' }} {{ job.salary_currency or '' }}
+        {% else %}—{% endif %}
+      </dd>
+      <dt>Published</dt><dd>{{ job.published_at.strftime('%Y-%m-%d') if job.published_at else '—' }}</dd>
+      <dt>Source URL</dt><dd><a class="link" href="{{ job.source_url }}" target="_blank" rel="noopener">{{ job.source_url }}</a></dd>
+    </dl>
+
+    {% if job.fit_reasons %}
+    <h3>Strong matches</h3>
+    <ul class="chips">{% for r in job.fit_reasons %}<li class="chip chip-good">{{ r }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if job.concerns %}
+    <h3>Concerns</h3>
+    <ul class="chips">{% for c in job.concerns %}<li class="chip chip-warn">{{ c }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    {% if job.description_text %}
+    <h3>Description</h3>
+    <div class="description">{{ job.description_text }}</div>
+    {% endif %}
+  </section>
+
+  <aside class="panel">
+    <div id="status-panel">
+      {% include "partials/status_panel.html" %}
+    </div>
+
+    <h3>Compliance</h3>
+    {% if meta %}
+    <ul class="meta-list">
+      <li>Attribution required: <strong>{{ 'yes' if meta.requires_attribution else 'no' }}</strong></li>
+      <li>Redistribution allowed: <strong>{{ 'yes' if meta.redistribution_allowed else 'no' }}</strong></li>
+      <li>Data rights: <strong>{{ meta.data_rights }}</strong></li>
+    </ul>
+    <p class="muted small">{{ meta.usage_notes }}</p>
+    {% else %}
+    <p class="muted">No source metadata.</p>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Dashboard</h1>
+  <p class="muted">A private, remote-first view of your job pipeline.</p>
+</div>
+
+<section class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-value">{{ total }}</div>
+    <div class="stat-label">Jobs stored</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ status_counts.get('shortlisted', 0) }}</div>
+    <div class="stat-label">Shortlisted</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ status_counts.get('applied', 0) }}</div>
+    <div class="stat-label">Applied</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ source_counts | length }}</div>
+    <div class="stat-label">Active sources</div>
+  </div>
+</section>
+
+<div class="two-col">
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Top matches</h2>
+      <a class="link" href="{{ url_for('jobs_page') }}">View all →</a>
+    </div>
+    {% if top_jobs %}
+    <table class="table">
+      <thead><tr><th>Score</th><th>Remote</th><th>Title</th><th>Company</th></tr></thead>
+      <tbody>
+        {% for job in top_jobs %}
+        <tr>
+          <td><span class="badge {{ score_class(job.fit_score) }}">{{ job.fit_score if job.fit_score is not none else '—' }}</span></td>
+          <td><span class="pill {{ remote_class(job.remote_category) }}">{{ remote_label(job.remote_category) }}</span></td>
+          <td><a class="link" href="{{ url_for('job_detail', job_id=job.id) }}">{{ job.title }}</a></td>
+          <td class="muted">{{ job.company }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No jobs yet. Head to <a class="link" href="{{ url_for('scan_page') }}">Scan</a> to fetch some.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>By remote category</h2></div>
+    {% if remote_counts %}
+    <ul class="bar-list">
+      {% for category, count in remote_counts.items() %}
+      <li>
+        <span class="pill {{ remote_class(category) }}">{{ remote_label(category) }}</span>
+        <span class="count">{{ count }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty">No data yet.</p>
+    {% endif %}
+
+    <div class="panel-head" style="margin-top:1.5rem"><h2>By source</h2></div>
+    {% if source_counts %}
+    <ul class="bar-list">
+      {% for source, count in source_counts.items() %}
+      <li><span class="pill">{{ source }}</span><span class="count">{{ count }}</span></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty">No data yet.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

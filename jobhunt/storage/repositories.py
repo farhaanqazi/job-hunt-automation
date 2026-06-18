@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from jobhunt.jobs.models import CanonicalJob
@@ -43,10 +43,48 @@ class JobRepository:
         return existing
 
     def list_jobs(self, min_score: int | None = None) -> list[JobRow]:
-        stmt = select(JobRow).order_by(
+        return self.query(min_score=min_score)
+
+    def get(self, job_id: int) -> JobRow | None:
+        return self.session.get(JobRow, job_id)
+
+    def query(
+        self,
+        *,
+        min_score: int | None = None,
+        remote_category: str | None = None,
+        source_id: str | None = None,
+        status: str | None = None,
+        search: str | None = None,
+    ) -> list[JobRow]:
+        """Filtered, ranked job query shared by the CLI and the web UI."""
+        stmt = select(JobRow)
+        if min_score is not None:
+            stmt = stmt.where(JobRow.fit_score >= min_score)
+        if remote_category:
+            stmt = stmt.where(JobRow.remote_category == remote_category)
+        if source_id:
+            stmt = stmt.where(JobRow.source_id == source_id)
+        if status:
+            stmt = stmt.where(JobRow.status == status)
+        if search:
+            like = f"%{search.strip().lower()}%"
+            stmt = stmt.where(
+                func.lower(JobRow.title).like(like) | func.lower(JobRow.company).like(like)
+            )
+        stmt = stmt.order_by(
             JobRow.fit_score.desc().nullslast(),
             JobRow.fetched_at.desc(),
         )
-        if min_score is not None:
-            stmt = stmt.where(JobRow.fit_score >= min_score)
         return list(self.session.scalars(stmt))
+
+    def total(self) -> int:
+        return self.session.scalar(select(func.count()).select_from(JobRow)) or 0
+
+    def remote_category_counts(self) -> dict[str, int]:
+        stmt = select(JobRow.remote_category, func.count()).group_by(JobRow.remote_category)
+        return {category: count for category, count in self.session.execute(stmt)}
+
+    def source_counts(self) -> dict[str, int]:
+        stmt = select(JobRow.source_id, func.count()).group_by(JobRow.source_id)
+        return {source: count for source, count in self.session.execute(stmt)}

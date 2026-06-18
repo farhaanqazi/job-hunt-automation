@@ -4,12 +4,10 @@ import logging
 from pathlib import Path
 
 import typer
-import yaml
 from rich.console import Console
 from rich.table import Table
 
 from jobhunt.jobs.models import JobStatus
-from jobhunt.jobs.scorer import CandidateProfile, score_job
 from jobhunt.logging_config import configure_logging
 from jobhunt.reports.console import format_remote_label
 from jobhunt.reports.export_csv import rows_to_csv_text
@@ -31,7 +29,6 @@ app.add_typer(export_app, name="export")
 console = Console()
 logger = logging.getLogger("jobhunt")
 
-PROFILE_PATH = "config/candidate_profile.example.yaml"
 ATTRIBUTION_NOTE = "Private use only. Preserve source URLs and attribution."
 
 
@@ -39,11 +36,6 @@ ATTRIBUTION_NOTE = "Private use only. Preserve source URLs and attribution."
 def main() -> None:
     """Private remote-first job discovery and tracking assistant."""
     configure_logging(Settings().log_level)
-
-
-def _load_profile(path: str = PROFILE_PATH) -> CandidateProfile:
-    data = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    return CandidateProfile(**data)
 
 
 def _bootstrap_engine() -> object:
@@ -110,35 +102,42 @@ def scan(
     country: str = typer.Option("in", "--country"),
 ) -> None:
     """Fetch, score, and store jobs from a single source."""
-    from jobhunt.sources.adzuna import AdzunaSource
-    from jobhunt.sources.remotive import RemotiveSource
+    from jobhunt.scanning import ScanError, perform_scan
 
     settings = Settings()
     engine = _bootstrap_engine()
 
-    if source == "remotive":
-        jobs = RemotiveSource().fetch()
-    elif source == "adzuna":
-        if not settings.has_adzuna_credentials:
-            raise typer.BadParameter("Adzuna requires ADZUNA_APP_ID and ADZUNA_APP_KEY")
-        jobs = AdzunaSource(settings.adzuna_app_id, settings.adzuna_app_key).fetch(
-            country=country,
-            query=query,
-        )
-    else:
-        raise typer.BadParameter(f"Unsupported scan source: {source}")
+    try:
+        with session_scope(engine) as session:
+            count = perform_scan(
+                session, source, settings=settings, query=query, country=country
+            )
+    except ScanError as exc:
+        raise typer.BadParameter(str(exc)) from exc
 
-    profile = _load_profile()
-    scored_jobs = [score_job(job, profile) for job in jobs]
-
-    with session_scope(engine) as session:
-        repo = JobRepository(session)
-        for job in scored_jobs:
-            repo.upsert(job)
-
-    logger.info("Stored %d jobs from %s", len(scored_jobs), source)
-    console.print(f"Stored {len(scored_jobs)} jobs from {source}.")
+    logger.info("Stored %d jobs from %s", count, source)
+    console.print(f"Stored {count} jobs from {source}.")
     console.print(ATTRIBUTION_NOTE)
+
+
+@app.command("serve")
+def serve(
+    host: str = typer.Option("127.0.0.1", "--host"),
+    port: int = typer.Option(8000, "--port"),
+    reload: bool = typer.Option(False, "--reload", help="Auto-reload on code changes (dev)."),
+) -> None:
+    """Launch the local web UI (FastAPI + HTMX)."""
+    import uvicorn
+
+    console.print(f"Job Hunt web UI -> http://{host}:{port}")
+    console.print(ATTRIBUTION_NOTE)
+    uvicorn.run(
+        "jobhunt.web.app:create_app",
+        factory=True,
+        host=host,
+        port=port,
+        reload=reload,
+    )
 
 
 # --- jobs --------------------------------------------------------------------

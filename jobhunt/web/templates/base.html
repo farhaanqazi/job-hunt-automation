@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Job Hunt{% endblock %} · Job Hunt Automation</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}" />
+  <script src="{{ url_for('static', path='/js/htmx.min.js') }}" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('dashboard') }}">
+      <span class="brand-mark">◆</span> Job Hunt
+    </a>
+    <nav class="nav">
+      <a href="{{ url_for('dashboard') }}" class="{{ 'is-active' if active == 'dashboard' }}">Dashboard</a>
+      <a href="{{ url_for('jobs_page') }}" class="{{ 'is-active' if active == 'jobs' }}">Jobs</a>
+      <a href="{{ url_for('scan_page') }}" class="{{ 'is-active' if active == 'scan' }}">Scan</a>
+      <a href="{{ url_for('sources_page') }}" class="{{ 'is-active' if active == 'sources' }}">Sources</a>
+      <a href="{{ url_for('export_page') }}" class="{{ 'is-active' if active == 'export' }}">Export</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    Private personal use only · Preserve source URLs &amp; attribution · No redistribution
+  </footer>
+</body>
+</html>

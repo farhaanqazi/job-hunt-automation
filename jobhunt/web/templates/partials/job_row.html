@@ -1,0 +1,22 @@
+<tr id="job-row-{{ job.id }}">
+  <td><span class="badge {{ score_class(job.fit_score) }}">{{ job.fit_score if job.fit_score is not none else '—' }}</span></td>
+  <td><span class="pill {{ remote_class(job.remote_category) }}">{{ remote_label(job.remote_category) }}</span></td>
+  <td><a class="link" href="{{ url_for('job_detail', job_id=job.id) }}">{{ job.title }}</a></td>
+  <td class="muted">{{ job.company }}</td>
+  <td><span class="pill">{{ job.source_id }}</span></td>
+  <td><span class="pill {{ status_class(job.status) }}">{{ status_label(job.status) }}</span></td>
+  <td class="col-actions">
+    <button class="icon-btn" title="Shortlist"
+            hx-post="{{ url_for('change_status', job_id=job.id) }}"
+            hx-vals='{"value": "shortlisted", "fragment": "row"}'
+            hx-target="#job-row-{{ job.id }}" hx-swap="outerHTML">★</button>
+    <button class="icon-btn" title="Mark applied"
+            hx-post="{{ url_for('change_status', job_id=job.id) }}"
+            hx-vals='{"value": "applied", "fragment": "row"}'
+            hx-target="#job-row-{{ job.id }}" hx-swap="outerHTML">✓</button>
+    <button class="icon-btn" title="Archive"
+            hx-post="{{ url_for('change_status', job_id=job.id) }}"
+            hx-vals='{"value": "archived", "fragment": "row"}'
+            hx-target="#job-row-{{ job.id }}" hx-swap="outerHTML">⌫</button>
+  </td>
+</tr>

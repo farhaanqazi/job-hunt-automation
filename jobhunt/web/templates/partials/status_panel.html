@@ -1,0 +1,12 @@
+<h3>Status</h3>
+<p>Current: <span class="pill {{ status_class(job.status) }}">{{ status_label(job.status) }}</span></p>
+<div class="status-actions">
+  {% for s in statuses %}
+  <button class="btn btn-small {{ 'btn-active' if job.status == s }}"
+          hx-post="{{ url_for('change_status', job_id=job.id) }}"
+          hx-vals='{"value": "{{ s }}", "fragment": "panel"}'
+          hx-target="#status-panel" hx-swap="innerHTML">
+    {{ status_label(s) }}
+  </button>
+  {% endfor %}
+</div>

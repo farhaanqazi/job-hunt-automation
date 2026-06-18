@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Not found{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Job not found</h1>
+  <p class="muted">No job with id {{ job_id }}.</p>
+  <a class="link" href="{{ url_for('jobs_page') }}">← Back to jobs</a>
+</div>
+{% endblock %}

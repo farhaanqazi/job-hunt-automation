@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Export{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Export</h1>
+  <p class="muted">Download a private local CSV of your stored jobs ({{ total }} total).</p>
+</div>
+
+<section class="panel narrow">
+  <form action="{{ url_for('export_download') }}" method="get">
+    <div class="field">
+      <label>Minimum score (optional)</label>
+      <input type="number" name="min_score" min="0" max="100" step="5" placeholder="e.g. 70" />
+    </div>
+    <button type="submit" class="btn btn-primary">Download CSV</button>
+  </form>
+  <p class="muted small" style="margin-top:1rem">
+    The CSV preserves source URLs and attribution. It is a private local report — do not republish it.
+  </p>
+</section>
+{% endblock %}

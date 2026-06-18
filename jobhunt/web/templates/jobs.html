@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Jobs{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Jobs</h1>
+  <p class="muted">Filter, review, and triage stored roles. Filters apply live.</p>
+</div>
+
+<form class="filters" hx-get="{{ url_for('jobs_fragment') }}" hx-target="#job-results"
+      hx-trigger="change, submit, keyup delay:300ms from:input[name='q']"
+      hx-push-url="false">
+  <div class="field">
+    <label>Search</label>
+    <input type="search" name="q" value="{{ filters.q }}" placeholder="title or company" />
+  </div>
+  <div class="field">
+    <label>Min score</label>
+    <input type="number" name="min_score" value="{{ filters.min_score }}" min="0" max="100" step="5" />
+  </div>
+  <div class="field">
+    <label>Remote</label>
+    <select name="remote">
+      <option value="">Any</option>
+      {% for c in remote_categories %}
+      <option value="{{ c }}" {{ 'selected' if filters.remote == c }}>{{ remote_label(c) }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label>Status</label>
+    <select name="status">
+      <option value="">Any</option>
+      {% for s in statuses %}
+      <option value="{{ s }}" {{ 'selected' if filters.status == s }}>{{ status_label(s) }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label>Source</label>
+    <select name="source">
+      <option value="">Any</option>
+      {% for s in sources %}
+      <option value="{{ s }}" {{ 'selected' if filters.source == s }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="btn btn-ghost">Apply</button>
+</form>
+
+<div id="job-results">
+  {% include "partials/job_table.html" %}
+</div>
+{% endblock %}

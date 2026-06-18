@@ -1,0 +1,19 @@
+{% if error %}
+<div class="notice notice-error">{{ error }}</div>
+{% elif results is defined %}
+  {% if results %}
+  <div class="notice notice-ok">
+    Scanned target companies:
+    <ul>{% for company, count in results.items() %}<li>{{ company }}: {{ count }} job(s)</li>{% endfor %}</ul>
+    <a class="link" href="{{ url_for('jobs_page') }}">View jobs →</a>
+  </div>
+  {% else %}
+  <div class="notice">No enabled target companies in config.</div>
+  {% endif %}
+{% else %}
+<div class="notice notice-ok">
+  Stored <strong>{{ count }}</strong> job(s) from <strong>{{ source }}</strong>.
+  <a class="link" href="{{ url_for('jobs_page') }}">View jobs →</a>
+  <div class="muted small">Private use only. Source URLs and attribution preserved.</div>
+</div>
+{% endif %}

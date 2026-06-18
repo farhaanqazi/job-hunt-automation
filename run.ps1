@@ -17,6 +17,9 @@
 
 .EXAMPLE
     .\run.ps1 jobs list --min-score 70
+
+.EXAMPLE
+    .\run.ps1 serve                    # launch the web UI at http://127.0.0.1:8000
 #>
 
 $ErrorActionPreference = "Stop"
