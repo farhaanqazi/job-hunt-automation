@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Build profile{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <a class="link" href="{{ url_for('profile_page') }}">← Back to profile</a>
+  <h1>Build your profile from your CV</h1>
+  <p class="lede">Paste or upload your CV. We extract only what's written there — skills, titles,
+  experience — then ask a few targeted questions to capture your preferences. Nothing is invented:
+  every skill and title is verified against your CV before it's kept.</p>
+</div>
+
+{% if error %}<div class="notice notice-error">{{ error }}</div>{% endif %}
+
+<section class="panel">
+  <p class="muted small">
+    {% if has_groq %}Using the Groq LLM to read your CV (strict schema, no free-text generation).
+    {% else %}No Groq key set — using the offline keyword extractor. Add <code>GROQ_API_KEY</code> to
+    <code>.env</code> for sharper extraction.{% endif %}
+  </p>
+
+  <form action="{{ url_for('onboarding_analyze') }}" method="post" enctype="multipart/form-data">
+    <div class="field" style="width:100%">
+      <label>Paste CV text</label>
+      <textarea name="cv_text" rows="12" placeholder="Paste your CV / resume text here…"
+                style="width:100%; font-family:var(--body); background:transparent;
+                       border:1px solid var(--rule); border-top:1.5px solid var(--ink); padding:0.8rem;"></textarea>
+    </div>
+    <div class="field" style="margin-top:1rem">
+      <label>…or upload a file (PDF / DOCX / TXT)</label>
+      <input type="file" name="cv_file" accept=".pdf,.docx,.txt,.md" />
+    </div>
+    <button type="submit" class="btn btn-primary" style="margin-top:1rem">Analyze CV</button>
+  </form>
+</section>
+{% endblock %}

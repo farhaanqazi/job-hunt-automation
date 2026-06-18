@@ -68,7 +68,9 @@ def perform_scan(
     profile: CandidateProfile | None = None,
 ) -> int:
     """Fetch, score, and upsert jobs from one source. Returns the count stored."""
-    profile = profile or load_profile()
+    from jobhunt.profile.store import load_active_profile
+
+    profile = profile or load_active_profile(settings)
     jobs = fetch_jobs(source, settings, query=query, country=country)
     repo = JobRepository(session)
     for job in jobs:

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Refine profile{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <a class="link" href="{{ url_for('onboarding_page') }}">← Start over</a>
+  <h1>What we found — and what we need from you</h1>
+  <p class="muted">Source: {{ 'Groq LLM' if source == 'groq' else 'offline extractor' }}. Everything below is grounded in your CV.</p>
+</div>
+
+{% if error %}<div class="notice notice-error">{{ error }}</div>{% endif %}
+{% for note in notes or [] %}<div class="notice">{{ note }}</div>{% endfor %}
+
+<div class="two-col">
+  <section class="panel">
+    <h2>Grounded from your CV</h2>
+    {% if draft.target_titles %}
+    <h3>Titles</h3>
+    <ul class="chips">{% for t in draft.target_titles %}<li class="chip chip-good">{{ t }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if draft.preferred_skills %}
+    <h3>Skills</h3>
+    <ul class="chips">{% for s in draft.preferred_skills %}<li class="chip chip-good">{{ s }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if not draft.target_titles and not draft.preferred_skills %}
+    <p class="empty">Nothing grounded yet — answer the questions to seed your profile.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>A few questions</h2>
+    <form action="{{ url_for('onboarding_finalize') }}" method="post">
+      <input type="hidden" name="cv_text" value="{{ cv_text | e }}" />
+      <input type="hidden" name="draft_json" value="{{ draft_json | e }}" />
+      <input type="hidden" name="questions_json" value="{{ questions_json | e }}" />
+
+      {% for q in questions %}
+      <div class="field" style="width:100%; margin-bottom:0.9rem">
+        <label>{{ q.prompt }}{% if q.hint %} <span class="muted small">— {{ q.hint }}</span>{% endif %}</label>
+        {% set val = draft.get(q.field) %}
+        {% if q.kind == 'yesno' %}
+        <select name="ans_{{ q.id }}">
+          <option value="">—</option>
+          <option value="yes" {{ 'selected' if val is true }}>Yes</option>
+          <option value="no" {{ 'selected' if val is false }}>No</option>
+        </select>
+        {% elif q.kind == 'number' %}
+        <input type="number" name="ans_{{ q.id }}" value="{{ val if val is not none else '' }}" min="0" step="1000" />
+        {% elif q.kind == 'list' %}
+        <input type="text" name="ans_{{ q.id }}" value="{{ (val | join(', ')) if val else '' }}" placeholder="comma-separated" />
+        {% else %}
+        <input type="text" name="ans_{{ q.id }}" value="{{ val if val is not none else '' }}" />
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      <button type="submit" class="btn btn-primary">Continue</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

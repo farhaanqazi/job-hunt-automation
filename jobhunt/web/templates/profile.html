@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Your Profile</h1>
+  <p class="muted">This drives every job's fit score. Build it from your CV — nothing is invented.</p>
+</div>
+
+{% if saved %}
+<div class="notice notice-ok">Profile saved. New scans will score against it.</div>
+{% endif %}
+
+<div class="two-col">
+  <section class="panel">
+    <div class="panel-head">
+      <h2>{{ 'Active profile' if exists else 'Example profile (not yet personalised)' }}</h2>
+      <a class="btn btn-primary" href="{{ url_for('onboarding_page') }}">
+        {{ 'Rebuild from CV' if exists else 'Build from CV' }}
+      </a>
+    </div>
+
+    {% if not exists %}
+    <p class="muted small">You're using the bundled example profile. Build your own from your CV
+    so scores reflect what you actually do.</p>
+    {% endif %}
+
+    <h3>Target titles</h3>
+    <ul class="chips">{% for t in profile.target_titles %}<li class="chip chip-good">{{ t }}</li>{% endfor %}</ul>
+    <h3>Strong skills</h3>
+    <ul class="chips">{% for s in profile.strong_skills %}<li class="chip chip-good">{{ s }}</li>{% endfor %}</ul>
+    <h3>Preferred skills</h3>
+    <ul class="chips">{% for s in profile.preferred_skills %}<li class="chip">{{ s }}</li>{% endfor %}</ul>
+    {% if profile.learning_skills %}
+    <h3>Learning</h3>
+    <ul class="chips">{% for s in profile.learning_skills %}<li class="chip">{{ s }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if profile.excluded_keywords %}
+    <h3>Avoid</h3>
+    <ul class="chips">{% for s in profile.excluded_keywords %}<li class="chip chip-warn">{{ s }}</li>{% endfor %}</ul>
+    {% endif %}
+  </section>
+
+  <aside class="panel">
+    <h2>Preferences</h2>
+    <dl class="detail-list">
+      <dt>Locations</dt><dd>{{ profile.preferred_locations | join(', ') or '—' }}</dd>
+      <dt>Timezone</dt><dd>{{ profile.timezone }}</dd>
+      <dt>Remote only</dt><dd>{{ 'yes' if profile.remote_only else 'no' }}</dd>
+      <dt>Contract</dt><dd>{{ 'yes' if profile.allow_contract else 'no' }}</dd>
+      <dt>Internship</dt><dd>{{ 'yes' if profile.allow_internship else 'no' }}</dd>
+      <dt>Min salary</dt><dd>{{ profile.min_salary if profile.min_salary else '—' }} {{ profile.salary_currency or '' }}</dd>
+    </dl>
+    <p class="muted small">Stored at <code>{{ path }}</code> — kept private on this machine.</p>
+  </aside>
+</div>
+{% endblock %}

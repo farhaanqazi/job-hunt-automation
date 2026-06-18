@@ -25,6 +25,21 @@ class Settings(BaseSettings):
 
     reed_api_key: str = Field(default="", validation_alias="REED_API_KEY")
 
+    # Groq (free LLM API) for the CV-based profile builder.
+    groq_api_key: str = Field(default="", validation_alias="GROQ_API_KEY")
+    groq_model: str = Field(
+        default="llama-3.3-70b-versatile", validation_alias="GROQ_MODEL"
+    )
+
+    # Where the active candidate profile is stored (personal data; git-ignored).
+    profile_path: str = Field(
+        default="config/candidate_profile.yaml", validation_alias="JOBHUNT_PROFILE_PATH"
+    )
+
+    @property
+    def has_groq_credentials(self) -> bool:
+        return bool(self.groq_api_key)
+
     @property
     def has_adzuna_credentials(self) -> bool:
         return bool(self.adzuna_app_id and self.adzuna_app_key)

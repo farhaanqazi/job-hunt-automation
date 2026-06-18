@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Review profile{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Review &amp; save</h1>
+  <p class="muted">This is your profile. Everything here came from your CV or your answers.</p>
+</div>
+
+<div class="two-col">
+  <section class="panel">
+    <h3>Target titles</h3>
+    <ul class="chips">{% for t in profile.target_titles %}<li class="chip chip-good">{{ t }}</li>{% endfor %}</ul>
+    <h3>Strong skills</h3>
+    <ul class="chips">{% for s in profile.strong_skills %}<li class="chip chip-good">{{ s }}</li>{% endfor %}</ul>
+    <h3>Preferred skills</h3>
+    <ul class="chips">{% for s in profile.preferred_skills %}<li class="chip">{{ s }}</li>{% endfor %}</ul>
+    {% if profile.learning_skills %}
+    <h3>Learning</h3>
+    <ul class="chips">{% for s in profile.learning_skills %}<li class="chip">{{ s }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if profile.excluded_keywords %}
+    <h3>Avoid</h3>
+    <ul class="chips">{% for s in profile.excluded_keywords %}<li class="chip chip-warn">{{ s }}</li>{% endfor %}</ul>
+    {% endif %}
+  </section>
+
+  <aside class="panel">
+    <h2>Preferences</h2>
+    <dl class="detail-list">
+      <dt>Locations</dt><dd>{{ profile.preferred_locations | join(', ') }}</dd>
+      <dt>Timezone</dt><dd>{{ profile.timezone }}</dd>
+      <dt>Remote only</dt><dd>{{ 'yes' if profile.remote_only else 'no' }}</dd>
+      <dt>Contract</dt><dd>{{ 'yes' if profile.allow_contract else 'no' }}</dd>
+      <dt>Internship</dt><dd>{{ 'yes' if profile.allow_internship else 'no' }}</dd>
+      <dt>Min salary</dt><dd>{{ profile.min_salary if profile.min_salary else '—' }} {{ profile.salary_currency or '' }}</dd>
+    </dl>
+
+    <form action="{{ url_for('onboarding_save') }}" method="post" style="margin-top:1rem">
+      <input type="hidden" name="profile_json" value="{{ profile_json | e }}" />
+      <button type="submit" class="btn btn-primary">Save profile</button>
+      <a class="btn btn-ghost" href="{{ url_for('onboarding_page') }}">Start over</a>
+    </form>
+  </aside>
+</div>
+{% endblock %}

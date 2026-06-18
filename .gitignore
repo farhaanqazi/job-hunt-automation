@@ -18,3 +18,6 @@ skills/
 
 # Local editor / assistant config
 .claude/
+
+# Personal profile derived from your CV (keep private)
+config/candidate_profile.yaml

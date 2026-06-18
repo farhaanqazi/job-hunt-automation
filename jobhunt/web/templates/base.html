@@ -23,6 +23,7 @@
     <nav class="nav">
       <a href="{{ url_for('dashboard') }}" class="{{ 'is-active' if active == 'dashboard' }}">Dashboard</a>
       <a href="{{ url_for('jobs_page') }}" class="{{ 'is-active' if active == 'jobs' }}">Listings</a>
+      <a href="{{ url_for('profile_page') }}" class="{{ 'is-active' if active == 'profile' }}">Profile</a>
       <a href="{{ url_for('scan_page') }}" class="{{ 'is-active' if active == 'scan' }}">Scan</a>
       <a href="{{ url_for('sources_page') }}" class="{{ 'is-active' if active == 'sources' }}">Sources</a>
       <a href="{{ url_for('export_page') }}" class="{{ 'is-active' if active == 'export' }}">Export</a>

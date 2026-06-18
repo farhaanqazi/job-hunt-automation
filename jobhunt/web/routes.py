@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Form, Request
-from fastapi.responses import HTMLResponse, Response
+import json
+
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy.orm import Session
 
 from jobhunt.applications.tracker import ApplicationTracker, JobNotFoundError
 from jobhunt.jobs.models import JobStatus, RemoteCategory
+from jobhunt.profile import builder, cv_extract, store
+from jobhunt.profile.models import ProfileDraft, Question
 from jobhunt.reports.export_csv import rows_to_csv_text
 from jobhunt.scanning import (
     SCANNABLE_SOURCES,
@@ -44,7 +48,11 @@ def _source_ready(source_id: str, enabled: bool, settings: Settings) -> bool:
 
 
 @router.get("/", response_class=HTMLResponse)
-def dashboard(request: Request, session: Session = Depends(get_session)):
+def dashboard(
+    request: Request,
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+):
     repo = JobRepository(session)
     tracker = ApplicationTracker(session)
     return _render(
@@ -56,6 +64,7 @@ def dashboard(request: Request, session: Session = Depends(get_session)):
         remote_counts=repo.remote_category_counts(),
         source_counts=repo.source_counts(),
         top_jobs=repo.query()[:8],
+        has_profile=store.profile_exists(settings),
     )
 
 
@@ -249,3 +258,119 @@ def export_download(
         media_type="text/csv",
         headers={"Content-Disposition": 'attachment; filename="jobs.csv"'},
     )
+
+
+# --- profile / onboarding ----------------------------------------------------
+
+
+def _questions_payload(questions: list[Question]) -> str:
+    return json.dumps([q.model_dump() for q in questions])
+
+
+@router.get("/profile", response_class=HTMLResponse)
+def profile_page(
+    request: Request,
+    saved: str | None = None,
+    settings: Settings = Depends(get_settings),
+):
+    return _render(
+        request,
+        "profile.html",
+        active="profile",
+        exists=store.profile_exists(settings),
+        profile=store.load_active_profile(settings),
+        path=settings.profile_path,
+        saved=bool(saved),
+        has_groq=settings.has_groq_credentials,
+    )
+
+
+@router.get("/onboarding", response_class=HTMLResponse)
+def onboarding_page(request: Request, settings: Settings = Depends(get_settings)):
+    return _render(
+        request, "onboarding.html", active="profile", has_groq=settings.has_groq_credentials
+    )
+
+
+@router.post("/onboarding/analyze", response_class=HTMLResponse)
+async def onboarding_analyze(
+    request: Request,
+    cv_text: str = Form(""),
+    cv_file: UploadFile | None = File(None),
+    settings: Settings = Depends(get_settings),
+):
+    text = cv_text or ""
+    if cv_file is not None and cv_file.filename:
+        data = await cv_file.read()
+        try:
+            text = (text + "\n" + cv_extract.extract_text(cv_file.filename, data)).strip()
+        except cv_extract.CvExtractionError as exc:
+            return _render(
+                request, "onboarding.html", active="profile",
+                error=str(exc), has_groq=settings.has_groq_credentials,
+            )
+
+    text = text.strip()
+    if not text:
+        return _render(
+            request, "onboarding.html", active="profile",
+            error="Please paste your CV text or upload a file.",
+            has_groq=settings.has_groq_credentials,
+        )
+
+    result = builder.analyze(text, settings)
+    return _render(
+        request,
+        "onboarding_questions.html",
+        active="profile",
+        cv_text=text,
+        draft=result.draft.model_dump(),
+        draft_json=result.draft.model_dump_json(),
+        questions=result.questions,
+        questions_json=_questions_payload(result.questions),
+        source=result.source,
+        notes=result.notes,
+    )
+
+
+@router.post("/onboarding/finalize", response_class=HTMLResponse)
+async def onboarding_finalize(request: Request, settings: Settings = Depends(get_settings)):
+    form = await request.form()
+    cv_text = str(form.get("cv_text", ""))
+    draft = ProfileDraft.model_validate_json(str(form.get("draft_json", "{}")))
+    questions = [Question(**q) for q in json.loads(str(form.get("questions_json", "[]")))]
+    answers = {q.id: str(form.get(f"ans_{q.id}", "")) for q in questions}
+
+    result = builder.finalize(cv_text, draft, answers, questions)
+
+    if not result.complete:
+        known = {q.id for q in questions}
+        merged = questions + [q for q in result.follow_up if q.id not in known]
+        return _render(
+            request,
+            "onboarding_questions.html",
+            active="profile",
+            cv_text=cv_text,
+            draft=result.draft.model_dump(),
+            draft_json=result.draft.model_dump_json(),
+            questions=merged,
+            questions_json=_questions_payload(merged),
+            source=result.source,
+            error="A couple of required fields still need grounding — please fill them in.",
+        )
+
+    return _render(
+        request,
+        "onboarding_review.html",
+        active="profile",
+        profile=result.profile,
+        profile_json=json.dumps(result.profile),
+    )
+
+
+@router.post("/onboarding/save")
+async def onboarding_save(request: Request, settings: Settings = Depends(get_settings)):
+    form = await request.form()
+    profile = json.loads(str(form.get("profile_json", "{}")))
+    store.save_profile(profile, settings.profile_path)
+    return RedirectResponse(url="/profile?saved=1", status_code=303)

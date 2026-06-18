@@ -9,6 +9,13 @@
   no auto-apply, no redistribution.</p>
 </div>
 
+{% if not has_profile %}
+<div class="notice">
+  You're scoring against the <strong>example</strong> profile.
+  <a class="link" href="{{ url_for('onboarding_page') }}">Build your own from your CV →</a>
+</div>
+{% endif %}
+
 <section class="stat-grid">
   <div class="stat-card">
     <div class="stat-value">{{ total }}</div>
