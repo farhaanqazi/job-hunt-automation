@@ -18,11 +18,14 @@ from jobhunt.scanning import (
     ScanError,
     perform_scan,
     scan_target_companies,
+    scan_all_sources,
 )
+from jobhunt.profile.store import load_active_profile
 from jobhunt.settings import Settings
 from jobhunt.sources.registry import load_source_catalog
 from jobhunt.storage.repositories import JobRepository
 from jobhunt.web.deps import get_session, get_settings
+from jobhunt import targets
 
 router = APIRouter()
 
@@ -41,6 +44,8 @@ def _source_ready(source_id: str, enabled: bool, settings: Settings) -> bool:
         return False
     if source_id == "adzuna":
         return settings.has_adzuna_credentials
+    if source_id == "usajobs":
+        return settings.has_usajobs_credentials
     return True
 
 
@@ -80,13 +85,15 @@ def _parse_min_score(value: str | None) -> int | None:
         return None
 
 
-def _filtered(session: Session, *, min_score, remote, source, status, q):
+def _filtered(session: Session, *, min_score, remote, source, status, q, sort_by=None, days_ago=None):
     return JobRepository(session).query(
         min_score=_parse_min_score(min_score),
         remote_category=remote or None,
         source_id=source or None,
         status=status or None,
         search=q or None,
+        sort_by=sort_by or None,
+        days_ago=int(days_ago) if days_ago else None,
     )
 
 
@@ -98,10 +105,12 @@ def jobs_page(
     source: str | None = None,
     status: str | None = None,
     q: str | None = None,
+    sort_by: str | None = None,
+    days_ago: str | None = None,
     session: Session = Depends(get_session),
 ):
     jobs = _filtered(
-        session, min_score=min_score, remote=remote, source=source, status=status, q=q
+        session, min_score=min_score, remote=remote, source=source, status=status, q=q, sort_by=sort_by, days_ago=days_ago
     )
     return _render(
         request,
@@ -117,6 +126,8 @@ def jobs_page(
             "source": source or "",
             "status": status or "",
             "q": q or "",
+            "sort_by": sort_by or "score",
+            "days_ago": days_ago or "",
         },
     )
 
@@ -129,10 +140,12 @@ def jobs_fragment(
     source: str | None = None,
     status: str | None = None,
     q: str | None = None,
+    sort_by: str | None = None,
+    days_ago: str | None = None,
     session: Session = Depends(get_session),
 ):
     jobs = _filtered(
-        session, min_score=min_score, remote=remote, source=source, status=status, q=q
+        session, min_score=min_score, remote=remote, source=source, status=status, q=q, sort_by=sort_by, days_ago=days_ago
     )
     return _render(request, "partials/job_table.html", jobs=jobs)
 
@@ -178,12 +191,20 @@ def change_status(
 
 @router.get("/scan", response_class=HTMLResponse)
 def scan_page(request: Request, settings: Settings = Depends(get_settings)):
+    try:
+        profile = load_active_profile(settings)
+        default_query = " OR ".join(profile.target_titles) if profile.target_titles else "python remote"
+    except Exception:
+        default_query = "python remote"
+        
     return _render(
         request,
         "scan.html",
         active="scan",
         scannable=SCANNABLE_SOURCES,
         has_adzuna=settings.has_adzuna_credentials,
+        has_usajobs=settings.has_usajobs_credentials,
+        default_query=default_query,
     )
 
 
@@ -213,6 +234,29 @@ def run_target_scan(request: Request, session: Session = Depends(get_session)):
         results = scan_target_companies(session)
     except Exception as exc:
         return _render(request, "partials/scan_result.html", error=f"Scan failed: {exc}")
+    return _render(request, "partials/scan_result.html", results=results)
+
+
+@router.post("/system/reset")
+def wipe_database(session: Session = Depends(get_session)):
+    repo = JobRepository(session)
+    repo.clear_all()
+    session.commit()
+    return RedirectResponse(url="/jobs", status_code=303)
+
+
+@router.post("/scan/all", response_class=HTMLResponse)
+def run_global_scan(
+    request: Request,
+    query: str = Form("python remote"),
+    country: str = Form("in"),
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+):
+    try:
+        results = scan_all_sources(session, settings=settings, query=query, country=country)
+    except Exception as exc:
+        return _render(request, "partials/scan_result.html", error=f"Global scan failed: {exc}")
     return _render(request, "partials/scan_result.html", results=results)
 
 
@@ -374,3 +418,65 @@ async def onboarding_save(request: Request, settings: Settings = Depends(get_set
     profile = json.loads(str(form.get("profile_json", "{}")))
     store.save_profile(profile, settings.profile_path)
     return RedirectResponse(url="/profile?saved=1", status_code=303)
+
+
+# --- targets -----------------------------------------------------------------
+
+
+@router.get("/targets", response_class=HTMLResponse)
+def targets_page(request: Request):
+    t = targets.load_targets()
+    ats_dir = targets.load_ats_directory()
+    
+    return _render(
+        request,
+        "targets.html",
+        active="targets",
+        targets=t,
+        directory=ats_dir
+    )
+
+
+@router.post("/targets/add", response_class=HTMLResponse)
+async def add_target(request: Request):
+    form = await request.form()
+    ats_type = str(form.get("ats_type", ""))
+    
+    # Handle the dropdown selection (which is a pipe-separated string "Company Name|token")
+    selected_val = str(form.get("selected_company", ""))
+    if selected_val and "|" in selected_val:
+        company, token = selected_val.split("|", 1)
+    else:
+        # Handle custom addition
+        company = str(form.get("company", "")).strip()
+        token = str(form.get("token", "")).strip()
+        
+    if ats_type and token and company:
+        targets.add_target(ats_type, company, token)
+        
+    return RedirectResponse(url="/targets", status_code=303)
+
+
+@router.post("/targets/toggle", response_class=HTMLResponse)
+async def toggle_target(request: Request):
+    form = await request.form()
+    ats_type = str(form.get("ats_type", ""))
+    token = str(form.get("token", ""))
+    enabled = str(form.get("enabled", "")) == "true"
+    
+    if ats_type and token:
+        targets.toggle_target(ats_type, token, enabled)
+        
+    return RedirectResponse(url="/targets", status_code=303)
+
+
+@router.post("/targets/delete", response_class=HTMLResponse)
+async def delete_target(request: Request):
+    form = await request.form()
+    ats_type = str(form.get("ats_type", ""))
+    token = str(form.get("token", ""))
+    
+    if ats_type and token:
+        targets.delete_target(ats_type, token)
+        
+    return RedirectResponse(url="/targets", status_code=303)

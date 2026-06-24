@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Targets{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Target Companies</h1>
+  <p class="muted">Manage specific companies to scan via their direct Applicant Tracking System (ATS) feeds.</p>
+</div>
+
+<div class="two-col">
+  <section class="panel">
+    <h2>Add Target Company</h2>
+    
+    <div style="margin-bottom: 2rem;">
+      <h3>Select from Directory</h3>
+      <form action="{{ url_for('add_target') }}" method="POST">
+        <div class="field">
+          <label>Greenhouse Companies</label>
+          <select name="selected_company">
+            <option value="">-- Select a Greenhouse Company --</option>
+            {% for item in directory.get('greenhouse', []) %}
+            <option value="{{ item.name }}|{{ item.token }}">{{ item.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <input type="hidden" name="ats_type" value="greenhouse">
+        <button type="submit" class="btn btn-primary">Add Greenhouse Target</button>
+      </form>
+      
+      <br>
+      
+      <form action="{{ url_for('add_target') }}" method="POST">
+        <div class="field">
+          <label>Lever Companies</label>
+          <select name="selected_company">
+            <option value="">-- Select a Lever Company --</option>
+            {% for item in directory.get('lever', []) %}
+            <option value="{{ item.name }}|{{ item.token }}">{{ item.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <input type="hidden" name="ats_type" value="lever">
+        <button type="submit" class="btn btn-primary">Add Lever Target</button>
+      </form>
+    </div>
+    
+    <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+    
+    <div>
+      <h3>Add Custom ATS Target</h3>
+      <p class="muted small" style="margin-bottom: 1rem;">If the company isn't in the directory, add it manually if you know their board token or handle.</p>
+      <form action="{{ url_for('add_target') }}" method="POST">
+        <div class="field">
+          <label>ATS Type</label>
+          <select name="ats_type" required>
+            <option value="greenhouse">Greenhouse</option>
+            <option value="lever">Lever</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Company Name</label>
+          <input type="text" name="company" required placeholder="e.g. My Startup">
+        </div>
+        <div class="field">
+          <label>Board Token / Handle</label>
+          <input type="text" name="token" required placeholder="e.g. mystartup">
+        </div>
+        <button type="submit" class="btn btn-secondary">Add Custom Target</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Your Configured Targets</h2>
+    
+    <h3>Greenhouse</h3>
+    <ul class="clean-list" style="margin-top: 1rem;">
+      {% for target in targets.get('greenhouse', []) %}
+      <li style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+        <div>
+          <strong>{{ target.company }}</strong> <br><span class="muted small">token: {{ target.board_token }}</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <form action="{{ url_for('toggle_target') }}" method="POST" style="margin: 0;">
+            <input type="hidden" name="ats_type" value="greenhouse">
+            <input type="hidden" name="token" value="{{ target.board_token }}">
+            <input type="hidden" name="enabled" value="{{ 'false' if target.enabled else 'true' }}">
+            <button type="submit" class="btn {{ 'btn-ghost' if target.enabled else 'btn-primary' }} btn-small" style="padding: 4px 8px; font-size: 0.8rem;">
+              {{ "Disable" if target.enabled else "Enable" }}
+            </button>
+          </form>
+          <form action="{{ url_for('delete_target') }}" method="POST" style="margin: 0;">
+            <input type="hidden" name="ats_type" value="greenhouse">
+            <input type="hidden" name="token" value="{{ target.board_token }}">
+            <button type="submit" class="btn btn-ghost btn-small" style="padding: 4px 8px; font-size: 0.8rem; color: #dc2626;">Delete</button>
+          </form>
+        </div>
+      </li>
+      {% else %}
+      <li class="muted" style="padding: 1rem 0;">No Greenhouse targets configured.</li>
+      {% endfor %}
+    </ul>
+    
+    <br><br>
+    
+    <h3>Lever</h3>
+    <ul class="clean-list" style="margin-top: 1rem;">
+      {% for target in targets.get('lever', []) %}
+      <li style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+        <div>
+          <strong>{{ target.company }}</strong> <br><span class="muted small">handle: {{ target.handle }}</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <form action="{{ url_for('toggle_target') }}" method="POST" style="margin: 0;">
+            <input type="hidden" name="ats_type" value="lever">
+            <input type="hidden" name="token" value="{{ target.handle }}">
+            <input type="hidden" name="enabled" value="{{ 'false' if target.enabled else 'true' }}">
+            <button type="submit" class="btn {{ 'btn-ghost' if target.enabled else 'btn-primary' }} btn-small" style="padding: 4px 8px; font-size: 0.8rem;">
+              {{ "Disable" if target.enabled else "Enable" }}
+            </button>
+          </form>
+          <form action="{{ url_for('delete_target') }}" method="POST" style="margin: 0;">
+            <input type="hidden" name="ats_type" value="lever">
+            <input type="hidden" name="token" value="{{ target.handle }}">
+            <button type="submit" class="btn btn-ghost btn-small" style="padding: 4px 8px; font-size: 0.8rem; color: #dc2626;">Delete</button>
+          </form>
+        </div>
+      </li>
+      {% else %}
+      <li class="muted" style="padding: 1rem 0;">No Lever targets configured.</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

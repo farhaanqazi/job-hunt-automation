@@ -1,0 +1,121 @@
+greenhouse:
+  - name: Airbnb
+    token: airbnb
+  - name: Asana
+    token: asana
+  - name: Discord
+    token: discord
+  - name: DoorDash
+    token: doordash
+  - name: Dropbox
+    token: dropbox
+  - name: Figma
+    token: figma
+  - name: GitHub
+    token: github
+  - name: GitLab
+    token: gitlab
+  - name: Instacart
+    token: instacart
+  - name: Lyft
+    token: lyft
+  - name: Pinterest
+    token: pinterest
+  - name: Plaid
+    token: plaid
+  - name: Reddit
+    token: reddit
+  - name: Roblox
+    token: roblox
+  - name: Squarespace
+    token: squarespace
+  - name: Stripe
+    token: stripe
+  - name: Twitch
+    token: twitch
+  - name: OpenAI
+    token: openai
+  - name: Anthropic
+    token: anthropic
+  - name: Cloudflare
+    token: cloudflare
+  - name: Databricks
+    token: databricks
+  - name: HashiCorp
+    token: hashicorp
+  - name: Vercel
+    token: vercel
+  - name: Notion
+    token: notion
+  - name: Coinbase
+    token: coinbase
+  - name: Kraken
+    token: kraken
+  - name: Robinhood
+    token: robinhood
+  - name: Plaid
+    token: plaid
+  - name: Ramp
+    token: ramp
+  - name: Brex
+    token: brex
+  - name: Retool
+    token: retool
+  - name: Linear
+    token: linear
+  - name: Supabase
+    token: supabase
+  - name: Vanta
+    token: vanta
+  - name: Zapier
+    token: zapier
+  - name: Webflow
+    token: webflow
+  - name: Outschool
+    token: outschool
+  - name: Affirm
+    token: affirm
+  - name: Scale AI
+    token: scaleai
+
+lever:
+  - name: Atlassian
+    token: atlassian
+  - name: Canva
+    token: canva
+  - name: Coursera
+    token: coursera
+  - name: Netflix
+    token: netflix
+  - name: Palantir
+    token: palantir
+  - name: Shopify
+    token: shopifylocations
+  - name: Yelp
+    token: yelp
+  - name: Eventbrite
+    token: eventbrite
+  - name: Quora
+    token: quora
+  - name: Figma
+    token: figma
+  - name: Clearbit
+    token: clearbit
+  - name: Pitch
+    token: pitch
+  - name: Hopper
+    token: hopper
+  - name: N26
+    token: n26
+  - name: Substack
+    token: substack
+  - name: Loom
+    token: loom
+  - name: Dribbble
+    token: dribbble
+  - name: Remote
+    token: remote
+  - name: Deel
+    token: deel
+  - name: Front
+    token: front

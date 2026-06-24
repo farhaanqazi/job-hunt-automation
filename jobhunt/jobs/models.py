@@ -23,6 +23,7 @@ class JobStatus(StrEnum):
     INTERVIEWING = "interviewing"
     REJECTED = "rejected"
     OFFER = "offer"
+    EXPIRED = "expired"
 
 
 class CanonicalJob(BaseModel):

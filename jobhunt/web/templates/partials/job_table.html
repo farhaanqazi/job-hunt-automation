@@ -3,14 +3,14 @@
   <thead>
     <tr>
       <th>Score</th><th>Remote</th><th>Title</th><th>Company</th>
-      <th>Source</th><th>Status</th><th class="col-actions">Actions</th>
+      <th>Source</th><th>Published</th><th>Found</th><th>Status</th><th class="col-actions">Actions</th>
     </tr>
   </thead>
   <tbody>
     {% for job in jobs %}
       {% include "partials/job_row.html" %}
     {% else %}
-    <tr><td colspan="7" class="empty">No jobs match these filters.</td></tr>
+    <tr><td colspan="9" class="empty">No jobs match these filters.</td></tr>
     {% endfor %}
   </tbody>
 </table>

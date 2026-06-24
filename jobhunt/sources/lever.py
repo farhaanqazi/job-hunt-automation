@@ -3,9 +3,33 @@ from hashlib import sha256
 from typing import Any
 
 import httpx
+import nh3
 
 from jobhunt.jobs.models import CanonicalJob
 from jobhunt.jobs.remote_classifier import classify_remote
+
+
+def reconstruct_and_sanitize_lever_html(item: dict[str, Any]) -> str:
+    html_pieces = []
+    intro_html = item.get("descriptionHtml", "")
+    if intro_html:
+        html_pieces.append(f'<div class="lever-intro">{intro_html}</div>')
+
+    for section in item.get("lists", []):
+        title = section.get("text", "")
+        content = section.get("content", "")
+        if title or content:
+            section_html = '<div class="lever-section">'
+            if title:
+                section_html += f'<h3>{title}</h3>'
+            if content:
+                section_html += content
+            section_html += '</div>'
+            html_pieces.append(section_html)
+
+    raw_html = "\n".join(html_pieces)
+    safe_tags = {"p", "br", "strong", "em", "h3", "h4", "ul", "ol", "li", "div", "a"}
+    return nh3.clean(raw_html, tags=safe_tags)
 
 
 class LeverSource:
@@ -31,7 +55,7 @@ class LeverSource:
         raw_payload_hash = sha256(repr(sorted(item.items())).encode("utf-8")).hexdigest()
         categories = item.get("categories", {})
         location_text = categories.get("location")
-        description_text = item.get("descriptionPlain")
+        description_text = reconstruct_and_sanitize_lever_html(item)
 
         return CanonicalJob(
             source_id=self.source_id,

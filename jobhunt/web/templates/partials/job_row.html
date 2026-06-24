@@ -4,6 +4,8 @@
   <td><a class="link" href="{{ url_for('job_detail', job_id=job.id) }}">{{ job.title }}</a></td>
   <td class="muted">{{ job.company }}</td>
   <td><span class="pill">{{ job.source_id }}</span></td>
+  <td class="muted small">{{ job.published_at.strftime('%Y-%m-%d') if job.published_at else '—' }}</td>
+  <td class="muted small">{{ job.fetched_at.strftime('%Y-%m-%d') if job.fetched_at else '—' }}</td>
   <td><span class="pill {{ status_class(job.status) }}">{{ status_label(job.status) }}</span></td>
   <td class="col-actions">
     <button class="icon-btn" title="Shortlist"

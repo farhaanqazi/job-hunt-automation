@@ -63,3 +63,16 @@ sources:
     canonical_url_required: true
     rate_limit_per_minute: 20
     usage_notes: "Supplemental EU/Germany-skewed source."
+
+  usajobs:
+    display_name: USAJOBS
+    enabled: true
+    source_type: broad_search
+    data_access: keyed_public_api
+    source_code_license: closed
+    data_rights: public_domain
+    redistribution_allowed: true
+    requires_attribution: false
+    canonical_url_required: true
+    rate_limit_per_minute: 60
+    usage_notes: "Requires API key. US federal roles."

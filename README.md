@@ -40,10 +40,13 @@ Job Hunt Automation gathers active job openings from **public / free-access APIs
 
 - **CV-based profile builder** — paste or upload your CV (PDF/DOCX/TXT); a contract-bound LLM (Groq, free tier) extracts skills/titles into a fixed schema and asks targeted follow-ups. Every extracted item is *verified to appear in your CV/answers* or dropped — it cannot invent experience. Works offline (keyword extractor) when no key is set.
 - **Multi-source aggregation** from 5 public job APIs / ATS feeds via pluggable adapters.
+- **Background Scheduled Syncing** — fully automated polling of Greenhouse and Lever ATS boards.
 - **Canonical job model** — every source is normalized into one consistent shape (`CanonicalJob`).
-- **Remote eligibility classifier** — buckets each role as global / India / timezone-compatible / country-restricted / hybrid-onsite / unknown (restriction beats a generic "global" signal).
+- **Rich HTML rendering** — descriptions from ATS platforms are properly reconstructed and aggressively sanitized via `nh3` (Rust) to prevent XSS.
+- **Remote eligibility classifier** — buckets each role as global / India / timezone-compatible / country-restricted / hybrid-onsite / unknown.
 - **Deterministic fit scoring** (whole-word skill matching) against your candidate profile (titles, skills, exclusions, remote-only, salary).
-- **Local SQLite persistence** with idempotent upserts (no duplicate rows on re-scan).
+- **Date Filtering & Sorting** — instantly filter your feed by `Past 24 hours` / `7 days` / `30 days` and toggle chronological sorting.
+- **Local SQLite persistence** with idempotent upserts (no duplicate rows on re-scan) and automated soft-delete for expired ATS listings.
 - **Application tracking** — shortlist, archive, and status roll-ups.
 - **Cross-source de-duplication** key (normalizes title, company, and URL).
 - **Private CSV export** for offline review in a spreadsheet.
@@ -154,9 +157,10 @@ A local server-rendered web app (FastAPI + HTMX, no Node/build step) covers the 
 Options: `--host`, `--port`, `--reload` (dev auto-reload). Pages:
 
 - **Dashboard** — pipeline totals, top matches, breakdowns by remote category and source.
-- **Jobs** — live filtering (search, min score, remote category, status, source); inline shortlist / applied / archive actions via HTMX.
+- **Jobs** — live filtering (search, min score, remote category, status, source, date posted, sort by); inline shortlist / applied / archive actions via HTMX.
 - **Job detail** — full info, fit reasons, concerns, source link, compliance posture, and one-click status changes.
-- **Scan** — run live scans against the no-key sources (Remotive, Arbeitnow) or Adzuna (with credentials), plus a "scan target companies" action for configured Greenhouse/Lever boards.
+- **Scan** — run a **Global Scan** (hits all APIs and ATS boards simultaneously), or run live scans against individual sources.
+- **Profile** — upload your CV, review your scoring criteria, and access the "Danger Zone" to completely wipe the database when testing a new CV.
 - **Sources** — readiness and compliance posture per source.
 - **Export** — download a private CSV (optionally filtered by min score).
 

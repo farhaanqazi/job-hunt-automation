@@ -83,6 +83,8 @@ def check_sources() -> None:
     for source in catalog.values():
         if source.source_id == "adzuna" and not settings.has_adzuna_credentials:
             status = "disabled (missing ADZUNA_APP_ID/ADZUNA_APP_KEY)"
+        elif source.source_id == "usajobs" and not settings.has_usajobs_credentials:
+            status = "disabled (missing USAJOBS_EMAIL/USAJOBS_API_KEY)"
         elif not source.enabled:
             status = "disabled (catalog)"
         else:

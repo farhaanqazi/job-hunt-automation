@@ -42,6 +42,20 @@ class JobRepository:
         existing.raw = job.raw
         return existing
 
+    def mark_missing_jobs_expired(self, source_id: str, company: str, live_job_ids: set[str]) -> int:
+        from jobhunt.jobs.models import JobStatus
+        stmt = select(JobRow).where(
+            JobRow.source_id == source_id,
+            JobRow.company == company,
+            JobRow.status == JobStatus.FOUND.value
+        )
+        expired_count = 0
+        for db_job in self.session.scalars(stmt):
+            if str(db_job.source_job_id) not in live_job_ids:
+                db_job.status = JobStatus.EXPIRED.value
+                expired_count += 1
+        return expired_count
+
     def list_jobs(self, min_score: int | None = None) -> list[JobRow]:
         return self.query(min_score=min_score)
 
@@ -56,8 +70,12 @@ class JobRepository:
         source_id: str | None = None,
         status: str | None = None,
         search: str | None = None,
+        sort_by: str | None = None,
+        days_ago: int | None = None,
     ) -> list[JobRow]:
         """Filtered, ranked job query shared by the CLI and the web UI."""
+        from datetime import datetime, timedelta, timezone
+        
         stmt = select(JobRow)
         if min_score is not None:
             stmt = stmt.where(JobRow.fit_score >= min_score)
@@ -72,14 +90,30 @@ class JobRepository:
             stmt = stmt.where(
                 func.lower(JobRow.title).like(like) | func.lower(JobRow.company).like(like)
             )
-        stmt = stmt.order_by(
-            JobRow.fit_score.desc().nullslast(),
-            JobRow.fetched_at.desc(),
-        )
+            
+        if days_ago is not None:
+            cutoff = datetime.now(timezone.utc) - timedelta(days=days_ago)
+            stmt = stmt.where(func.coalesce(JobRow.published_at, JobRow.fetched_at) >= cutoff)
+
+        if sort_by == "date":
+            stmt = stmt.order_by(
+                JobRow.fetched_at.desc(),
+                JobRow.published_at.desc().nullslast(),
+            )
+        else:
+            stmt = stmt.order_by(
+                JobRow.fit_score.desc().nullslast(),
+                JobRow.fetched_at.desc(),
+            )
         return list(self.session.scalars(stmt))
 
     def total(self) -> int:
         return self.session.scalar(select(func.count()).select_from(JobRow)) or 0
+
+    def clear_all(self) -> int:
+        from sqlalchemy import delete
+        result = self.session.execute(delete(JobRow))
+        return result.rowcount
 
     def remote_category_counts(self) -> dict[str, int]:
         stmt = select(JobRow.remote_category, func.count()).group_by(JobRow.remote_category)

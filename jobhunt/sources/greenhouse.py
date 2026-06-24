@@ -3,9 +3,17 @@ from hashlib import sha256
 from typing import Any
 
 import httpx
+import nh3
 
 from jobhunt.jobs.models import CanonicalJob
 from jobhunt.jobs.remote_classifier import classify_remote
+
+
+def _sanitize_greenhouse_html(raw_html: str | None) -> str | None:
+    if not raw_html:
+        return raw_html
+    safe_tags = {"p", "br", "strong", "em", "h3", "h4", "ul", "ol", "li", "div", "a"}
+    return nh3.clean(raw_html, tags=safe_tags)
 
 
 class GreenhouseSource:
@@ -31,7 +39,7 @@ class GreenhouseSource:
     def _normalize(self, item: dict[str, Any]) -> CanonicalJob:
         raw_payload_hash = sha256(repr(sorted(item.items())).encode("utf-8")).hexdigest()
         location_text = item.get("location", {}).get("name")
-        description_text = item.get("content")
+        description_text = _sanitize_greenhouse_html(item.get("content"))
 
         return CanonicalJob(
             source_id=self.source_id,

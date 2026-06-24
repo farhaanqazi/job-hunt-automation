@@ -40,7 +40,7 @@
 
     {% if job.description_text %}
     <h3>Description</h3>
-    <div class="description">{{ strip_html(job.description_text) }}</div>
+    <div class="description">{{ job.description_text | safe }}</div>
     {% endif %}
   </section>
 

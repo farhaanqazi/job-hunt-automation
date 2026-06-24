@@ -54,4 +54,12 @@
     <p class="muted small">Stored at <code>{{ path }}</code> — kept private on this machine.</p>
   </aside>
 </div>
+
+<div class="panel" style="margin-top: 2rem; border-color: #d32f2f;">
+  <h3 style="color: #d32f2f; margin-top: 0;">Danger Zone</h3>
+  <p class="muted">Testing a new CV? You can permanently wipe all scanned jobs from the database to start fresh.</p>
+  <form action="{{ url_for('wipe_database') }}" method="post" onsubmit="return confirm('Are you sure you want to permanently delete all stored jobs? This cannot be undone.');">
+    <button type="submit" class="btn" style="background-color: #d32f2f; color: white; border: none; font-weight: 600;">Wipe All Jobs</button>
+  </form>
+</div>
 {% endblock %}

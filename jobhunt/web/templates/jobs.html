@@ -9,7 +9,7 @@
 
 <form class="filters" hx-get="{{ url_for('jobs_fragment') }}" hx-target="#job-results"
       hx-trigger="change, submit, keyup delay:300ms from:input[name='q']"
-      hx-push-url="false">
+      hx-push-url="false" hx-indicator="#filter-spin">
   <div class="field">
     <label>Search</label>
     <input type="search" name="q" value="{{ filters.q }}" placeholder="title or company" />
@@ -45,10 +45,29 @@
       {% endfor %}
     </select>
   </div>
-  <button type="submit" class="btn btn-ghost">Apply</button>
+  <div class="field">
+    <label>Date Posted</label>
+    <select name="days_ago">
+      <option value="">Any Time</option>
+      <option value="1" {{ 'selected' if filters.days_ago == '1' }}>Past 24 hours</option>
+      <option value="7" {{ 'selected' if filters.days_ago == '7' }}>Past 7 days</option>
+      <option value="30" {{ 'selected' if filters.days_ago == '30' }}>Past 30 days</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Sort By</label>
+    <select name="sort_by">
+      <option value="score" {{ 'selected' if filters.sort_by == 'score' }}>Highest Score</option>
+      <option value="date" {{ 'selected' if filters.sort_by == 'date' }}>Newest found first</option>
+    </select>
+  </div>
+  <div style="display: flex; align-items: center; gap: 0.5rem;">
+    <button type="submit" class="btn btn-ghost">Apply</button>
+    <a href="{{ url_for('jobs_page') }}" class="btn btn-ghost" style="text-decoration: none;">Reset</a>
+    <span id="filter-spin" class="htmx-indicator spinner" style="margin-left: 10px;">Updating…</span>
+  </div>
 </form>
 
 <div id="job-results">
   {% include "partials/job_table.html" %}
-</div>
 {% endblock %}

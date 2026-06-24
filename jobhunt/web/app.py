@@ -8,21 +8,29 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import sessionmaker
+from contextlib import asynccontextmanager
 
 from jobhunt.settings import Settings
 from jobhunt.storage.database import create_schema, get_engine
 from jobhunt.web.presentation import TEMPLATE_GLOBALS
 from jobhunt.web.routes import router
+from jobhunt.scheduler import start_global_sync_scheduler, shutdown_scheduler
 
 WEB_DIR = Path(__file__).parent
 TEMPLATES_DIR = WEB_DIR / "templates"
 STATIC_DIR = WEB_DIR / "static"
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    start_global_sync_scheduler(app.state.engine)
+    yield
+    shutdown_scheduler()
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings()
 
-    app = FastAPI(title="Job Hunt Automation", docs_url=None, redoc_url=None)
+    app = FastAPI(title="Job Hunt Automation", docs_url=None, redoc_url=None, lifespan=lifespan)
 
     engine = get_engine(settings.database_url)
     create_schema(engine)

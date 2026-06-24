@@ -15,18 +15,18 @@
         <label>Source</label>
         <select name="source">
           {% for s in scannable %}
-          <option value="{{ s }}" {{ 'disabled' if s == 'adzuna' and not has_adzuna }}>
-            {{ s }}{{ ' (needs API key)' if s == 'adzuna' and not has_adzuna }}
+          <option value="{{ s }}" {{ 'disabled' if (s == 'adzuna' and not has_adzuna) or (s == 'usajobs' and not has_usajobs) }}>
+            {{ s }}{{ ' (needs API key)' if (s == 'adzuna' and not has_adzuna) or (s == 'usajobs' and not has_usajobs) }}
           </option>
           {% endfor %}
         </select>
       </div>
       <div class="field">
-        <label>Query <span class="muted small">(Adzuna only)</span></label>
-        <input type="text" name="query" value="python remote" />
+        <label>Query</label>
+        <input type="text" name="query" value="{{ default_query }}" />
       </div>
       <div class="field">
-        <label>Country <span class="muted small">(Adzuna only)</span></label>
+        <label>Country</label>
         <input type="text" name="country" value="in" maxlength="2" />
       </div>
       <button type="submit" class="btn btn-primary">Run scan</button>
@@ -35,13 +35,39 @@
   </section>
 
   <section class="panel">
-    <h2>Target companies</h2>
-    <p class="muted">Scan the enabled Greenhouse / Lever boards from <code>config/target_companies.yaml</code>.</p>
-    <form hx-post="{{ url_for('run_target_scan') }}" hx-target="#scan-result" hx-indicator="#scan-spin">
-      <button type="submit" class="btn btn-ghost">Scan target companies</button>
+    <h5>Target Companies</h5>
+    <p class="muted">
+      Scan the enabled Greenhouse / Lever boards configured in your <a href="{{ url_for('targets_page') }}">Targets dashboard</a>.
+    </p>
+    <form hx-post="/scan/targets" hx-target="#target-result" hx-indicator="#target-spin">
+      <button type="submit" class="btn btn-secondary">Scan Target Companies</button>
+      <span id="target-spin" class="htmx-indicator spinner" style="margin-left: 10px;">Scanning targets…</span>
     </form>
   </section>
 </div>
 
+<div class="panel" style="margin-bottom: 2rem;">
+  <h2>Global Scan</h2>
+  <p class="muted">Run a complete system sync. This fetches jobs from all broad API sources and every single one of your Target Companies simultaneously.</p>
+  <form hx-post="/scan/all" hx-target="#global-result" hx-indicator="#global-spin">
+    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+      <div class="field" style="flex: 1;">
+        <label>Query (Adzuna & USAJobs)</label>
+        <input type="text" name="query" value="{{ default_query }}" />
+      </div>
+      <div class="field" style="flex: 1;">
+        <label>Country (Adzuna)</label>
+        <input type="text" name="country" value="in" maxlength="2" />
+      </div>
+    </div>
+    <div style="display: flex; align-items: center;">
+      <button type="submit" class="btn btn-primary" style="background-color: var(--accent); color: white; padding: 0.75rem 2rem; font-size: 1.1rem;">Run Global Scan</button>
+      <span id="global-spin" class="htmx-indicator spinner" style="margin-left: 15px;">Aggregating all sources... (this may take 10-20 seconds)</span>
+    </div>
+  </form>
+  <div id="global-result" class="scan-result" style="margin-top: 1rem;"></div>
+</div>
+
 <div id="scan-result" class="scan-result"></div>
+<div id="target-result" class="scan-result"></div>
 {% endblock %}
